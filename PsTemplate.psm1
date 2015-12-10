@@ -2,14 +2,13 @@
 Function Render([string]$template, $model){
     $p = _Parse $template
     $p | % {Write-Host $_}
-    return
     $str = _Fill $model $p
     return $str
 }
 
 Function _Parse([string]$templateStr){
     $stack = Create-Stack
-    $result = _Split $templateStr 0 $stack
+    $result = _Split $templateStr $stack
     return $result
 }
 
@@ -50,31 +49,33 @@ Function _Fill($model, $stack){
     return $str
 }
 
-Function _Split([string]$templateStr, [int]$startIndex, $stack){
-    if($startIndex -lt 0 -or $startIndex -ge $templateStr.Length){
-        return $stack
-    }
-
-    @("<%=", "<%", "%>") | % {
-        $temp = $templateStr.IndexOf($_, $startIndex)
-        if($temp -ge $startIndex){
+Function _Split([string]$templateStr, $stack){
+    $startIndex = 0
+    $templateLen = $templateStr.Length
+    while($startIndex -lt $templateLen){
+        foreach( $p in @("<%=", "<%", "%>")){
+            $temp = $templateStr.IndexOf($p, $startIndex)
             $currentValue = ''
+            if($temp -lt 0){
+                continue
+            }
+
             if($temp -gt $startIndex){
-                $currentValue = $templateStr.SubString($startIndex, $temp - $startIndex)
+                 $currentValue = $templateStr.SubString($startIndex, $temp - $startIndex)
             }
-            else {
-                $currentValue = $_
+            elseif($temp -eq $startIndex){
+                $currentValue = $p
             }
-            $nextIndex = $startIndex + $currentValue.Length
             $stack = Push-Stack $stack $currentValue
-            return _Split $templateStr $nextIndex $stack
+            $startIndex += $currentValue.Length
+            break
         }
     }
     return $stack
 }
 
 Function Create-Stack(){
-    return @()
+    return ,@()
 }
 Function Clear-Stack($stack){
     $stack.Clear()
@@ -83,7 +84,7 @@ Function Clear-Stack($stack){
 
 Function Push-Stack($stack, $value){
     $stack += $value
-    return $stack
+    return ,$stack
 }
 
 Function Top-Stack($stack){
@@ -100,7 +101,7 @@ Function Pop-Stack($stack){
         return @()
     }
 
-    return $stack[0..($count - 2)]
+    return ,$stack[0..($count - 2)]
 }
 
 Function IsEmpty-Stack($stack){
