@@ -1,7 +1,7 @@
 
 Function Render([string]$template, $model){
     $p = _Parse $template
-    $p | % {Write-Host $_}
+    #$p | % {Write-Host $_}
     $str = _Fill $model $p
     return $str
 }
@@ -56,6 +56,7 @@ Function _Split([string]$templateStr, $stack){
         $currentValue = ''
         foreach( $p in @("<%=", "<%", "%>")){
             $temp = $templateStr.IndexOf($p, $startIndex)
+            #Write-Host "pivot: $p, startIndex: $startIndex, result: $temp"
             if($temp -lt 0){
                 continue
             }
@@ -68,6 +69,7 @@ Function _Split([string]$templateStr, $stack){
             }
             break
         }
+        Write-Host $currentValue
         if(-not $currentValue){
             $currentValue = $templateStr.SubString($startIndex, $templateLen - $startIndex)
         }
