@@ -4,8 +4,8 @@ Describe "Render template With Value"{
     It "Should get the code to be replaced"{
         $temp = '<%= $model.name %>'
         $model = @{name = 'foo'}
-        #$res = Render $temp $model
-        #$res | Should Be 'foo'
+        $res = Render $temp $model
+        $res | Should Be 'foo'
     } 
 
     It "Should get code in the middle of template to be replaced"{

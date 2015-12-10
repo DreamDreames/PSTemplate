@@ -21,12 +21,12 @@ Function _Fill($model, $stack){
         $stack = Pop-Stack $stack
         switch ($value){
             "<%="   {
-                $str += Invoke-Expression $expression
+                $str = (Invoke-Expression $expression) + $str
                 $inBolck = $false
                 break
             }
             "<%"    {
-                $str += Invoke-Expression $expression
+                $str = (Invoke-Expression $expression) + $str
                 $inBolck = $false
                 break
             }
@@ -37,10 +37,10 @@ Function _Fill($model, $stack){
             }
             Default {
                 if($inBolck){
-                    $expression += $value
+                    $expression = $value + $expression
                 }
                 else{
-                    $str += $value
+                    $str = $value + $str
                 }
                 break
             }
@@ -53,9 +53,9 @@ Function _Split([string]$templateStr, $stack){
     $startIndex = 0
     $templateLen = $templateStr.Length
     while($startIndex -lt $templateLen){
+        $currentValue = ''
         foreach( $p in @("<%=", "<%", "%>")){
             $temp = $templateStr.IndexOf($p, $startIndex)
-            $currentValue = ''
             if($temp -lt 0){
                 continue
             }
@@ -66,11 +66,13 @@ Function _Split([string]$templateStr, $stack){
             elseif($temp -eq $startIndex){
                 $currentValue = $p
             }
-            #Write-Host $currentValue
-            $stack = Push-Stack $stack $currentValue
-            $startIndex += $currentValue.Length
             break
         }
+        if(-not $currentValue){
+            $currentValue = $templateStr.SubString($startIndex, $templateLen - $startIndex)
+        }
+        $stack = Push-Stack $stack $currentValue
+        $startIndex += $currentValue.Length
     }
     return $stack
 }
