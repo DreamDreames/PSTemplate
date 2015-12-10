@@ -66,6 +66,7 @@ Function _Split([string]$templateStr, $stack){
             elseif($temp -eq $startIndex){
                 $currentValue = $p
             }
+            #Write-Host $currentValue
             $stack = Push-Stack $stack $currentValue
             $startIndex += $currentValue.Length
             break
