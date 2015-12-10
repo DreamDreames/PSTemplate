@@ -3,5 +3,5 @@
 		<% $models | % { %>
 			<name> <%= $_ %> </name>
 		<% } %>
-	<book>
-<books>	
+	</book>
+</books>	

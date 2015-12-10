@@ -1,6 +1,8 @@
 
 Function Render([string]$template, $model){
     $p = _Parse $template
+    $p | % {Write-Host $_}
+    return
     $str = _Fill $model $p
     return $str
 }
@@ -16,7 +18,8 @@ Function _Fill($model, $stack){
     $expression = ""
     $inBolck = $false
     While(-not (IsEmpty-Stack $stack) ){
-        $value = Pop-Stack $stack
+        $value = Top-Stack $stack
+        $stack = Pop-Stack $stack
         switch ($value){
             "<%="   {
                 $str += Invoke-Expression $expression
@@ -63,6 +66,7 @@ Function _Split([string]$templateStr, [int]$startIndex, $stack){
                 $currentValue = $_
             }
             $nextIndex = $startIndex + $currentValue.Length
+            $stack = Push-Stack $stack $currentValue
             return _Split $templateStr $nextIndex $stack
         }
     }
@@ -73,18 +77,30 @@ Function Create-Stack(){
     return @()
 }
 Function Clear-Stack($stack){
-    $stack = @()
+    $stack.Clear()
+    return @()
 }
 
 Function Push-Stack($stack, $value){
     $stack += $value
+    return $stack
 }
 
-Function Pop-Stack($stack){
-    if( IsEmpty-Stack $stack ){
+Function Top-Stack($stack){
+    if( IsEmpty-Stack $stack){
         return $null
     }
     return $stack[-1]
+}
+
+Function Pop-Stack($stack){
+    $count = $stack.Count
+    if($count -lt 2){
+        $stack.Clear()
+        return @()
+    }
+
+    return $stack[0..($count - 2)]
 }
 
 Function IsEmpty-Stack($stack){
