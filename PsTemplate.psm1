@@ -17,6 +17,8 @@ Function _Parse($templateStr, $model){
     }
     $pos = 0
     $stack = Create-Stack
+    $containsExp = $False
+    $expression = ''
     $indexes | % {
         $exp = $templateStr.SubString($pos, $_ - $pos)
         $cur = $templateStr.SubString($_)
@@ -25,12 +27,14 @@ Function _Parse($templateStr, $model){
                 Write-Host "Push1: $exp Pos before push: $pos"
                 $stack = _Move-Forward $stack $exp "<%="
                 $pos = "<%=".Length
+                $containsExp = $True
                 break
             }
             "^<%" {
                 Write-Host "Push2: $exp Pos before push: $pos"
                 $stack, $pos = _Move-Forward $stack $exp "<%"
                 $pos = "<%".Length
+                $containsExp = $True
                 break
             }
             "^%>"{
@@ -50,7 +54,15 @@ Function _Parse($templateStr, $model){
     if($pos -lt $templateStr.Length){
         $stack = Push-Stack $stack $templateStr.SubString($pos)
     }
-    return Join-Stack $stack
+    $exp = Join-Stack $stack
+    Write-Host "To be invoke: $exp"
+    if($containsExp){
+        Write-Host "Invoke... $model"
+        Invoke-Expression "$exp"
+        Write-Host $expression
+        return $expression
+    }
+    return $exp
 }
 
 Function _Move-Forward($stack, $exp, $pivot){
@@ -64,7 +76,31 @@ Function _Move-Forward($stack, $exp, $pivot){
     return ,$stack
 }
 
-Function _Evaluate($stack)
+Function _Evaluate($stack){
+    $expression = ''
+    while( -not (IsEmpty-Stack $stack)){
+        $temp = Top-Stack $stack
+        $stack = Pop-Stack $stack
+        if(-not $temp){
+            continue
+        }
+        if($temp -eq "<%="){
+            #return "$(" + $expression + ")"
+            Write-Host "Expression: $expression"
+            $stack = Push-Stack $stack ('$expression += $(' + "$expression" + ')')
+            return ,$stack
+        }
+        elseif($temp -eq "<%"){
+            Push-Stack $stack $expression
+            return ,$stack
+        }
+        else{
+            $expression += $temp
+        }
+    }
+    return ,$stack
+}
+Function _Evaluate1($stack)
 {
     $expression = ""
     while(-not (IsEmpty-Stack $stack)){
@@ -83,8 +119,9 @@ Function _Evaluate($stack)
         }
         elseif($temp -eq "<%"){
             Write-Host "Evaluate: $expression"
-            $value = Invoke-Expression $expression
-            $stack = Push-Stack $stack $value
+            #$value = Invoke-Expression $expression
+            #$stack = Push-Stack $stack $value
+            $stack = Push-Stack $stack $expression
             return ,$stack
         }
         else{
@@ -97,6 +134,7 @@ Function _Evaluate($stack)
 Function Create-Stack(){
     return ,@()
 }
+
 Function Clear-Stack($stack){
     $stack.Clear()
     return @()
@@ -133,9 +171,9 @@ Function IsEmpty-Stack($stack){
 }
 
 Function Join-Stack($stack){
-    $result = ""
+    $result = ''
     if($stack){
-        $stack | ? {$result += $_}
+        $stack | ? {$result += $_ + ';'}
     }
     return $result
 }
