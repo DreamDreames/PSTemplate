@@ -17,7 +17,7 @@ Describe "Render template With Value"{
 
     It "Should replace multiple values in a text"{
         $temp = 'book name <%= $model.name %>, author <%= $model.author %>'
-        $model = ${name = 'foo'; author = 'bar'}
+        $model = @{name = 'foo'; author = 'bar'}
         $res = Render $temp $model
         $res | Should Be 'book name foo, author bar'
     }

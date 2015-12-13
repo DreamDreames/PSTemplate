@@ -1,82 +1,97 @@
 
 Function Render([string]$template, $model){
-    $p = _Parse $template
-    #$p | % {Write-Host $_}
-    $str = _Fill $model $p
+    $str = _Parse $template $model
     return $str
 }
 
-Function _Parse([string]$templateStr){
-    $stack = Create-Stack
-    $result = _Split $templateStr $stack
-    return $result
+Function _Find-Index([string]$templateStr, $startIndex){
+    $regex = [regex]"<%=|%>|<%";
+    return $regex.Matches($templateStr) | foreach {$_.Index} | Sort | Get-Unique
 }
 
-Function _Fill($model, $stack){
-    $str = ''
-    $expression = ""
-    $inBolck = $false
-    While(-not (IsEmpty-Stack $stack) ){
-        $value = Top-Stack $stack
-        $stack = Pop-Stack $stack
-        switch ($value){
-            "<%="   {
-                $str = (Invoke-Expression $expression) + $str
-                $inBolck = $false
+Function _Parse($templateStr, $model){
+    $indexes = _Find-Index $templateStr
+    Write-Host "template: $templateStr, index: $indexes"
+    if(-not $indexes){
+        return $templateStr
+    }
+    $pos = 0
+    $stack = Create-Stack
+    $indexes | % {
+        $exp = $templateStr.SubString($pos, $_ - $pos)
+        $cur = $templateStr.SubString($_)
+        switch -regex ($cur){
+            "^<%=" {
+                Write-Host "Push1: $exp Pos before push: $pos"
+                $stack = _Move-Forward $stack $exp "<%="
+                $pos = "<%=".Length
                 break
             }
-            "<%"    {
-                $str = (Invoke-Expression $expression) + $str
-                $inBolck = $false
+            "^<%" {
+                Write-Host "Push2: $exp Pos before push: $pos"
+                $stack, $pos = _Move-Forward $stack $exp "<%"
+                $pos = "<%".Length
                 break
             }
-            "%>"    {
-                $inBolck = $true
-                $expression = ""
+            "^%>"{
+                Write-Host "Push and pop: $exp Pos before push: $pos"
+                $stack = _Move-Forward $stack $exp ""
+                $stack= _Evaluate $stack
+                $pos = "%>".Length
                 break
             }
             Default {
-                if($inBolck){
-                    $expression = $value + $expression
-                }
-                else{
-                    $str = $value + $str
-                }
                 break
             }
         }
+        $pos += $_
+        Write-Host "New Pos: $pos"
     }
-    return $str
+    if($pos -lt $templateStr.Length){
+        $stack = Push-Stack $stack $templateStr.SubString($pos)
+    }
+    return Join-Stack $stack
 }
 
-Function _Split([string]$templateStr, $stack){
-    $startIndex = 0
-    $templateLen = $templateStr.Length
-    while($startIndex -lt $templateLen){
-        $currentValue = ''
-        foreach( $p in @("<%=", "<%", "%>")){
-            $temp = $templateStr.IndexOf($p, $startIndex)
-            #Write-Host "pivot: $p, startIndex: $startIndex, result: $temp"
-            if($temp -lt 0){
-                continue
-            }
-
-            if($temp -gt $startIndex){
-                 $currentValue = $templateStr.SubString($startIndex, $temp - $startIndex)
-            }
-            elseif($temp -eq $startIndex){
-                $currentValue = $p
-            }
-            break
-        }
-        Write-Host $currentValue
-        if(-not $currentValue){
-            $currentValue = $templateStr.SubString($startIndex, $templateLen - $startIndex)
-        }
-        $stack = Push-Stack $stack $currentValue
-        $startIndex += $currentValue.Length
+Function _Move-Forward($stack, $exp, $pivot){
+    if($exp){
+        $stack = Push-Stack $stack $exp
     }
-    return $stack
+    if($pivot){
+        $stack = Push-Stack $stack $pivot
+    }
+
+    return ,$stack
+}
+
+Function _Evaluate($stack)
+{
+    $expression = ""
+    while(-not (IsEmpty-Stack $stack)){
+        $temp = Top-Stack $stack
+        $stack = Pop-Stack $stack
+        if(-not $temp){
+            continue
+        }
+        if($temp -eq "<%="){
+            Write-Host "Evaluate: $expression"
+            $value = Invoke-Expression $expression
+            $t = Join-Stack $stack
+            Write-Host "Value: $value Current Stack: $t"
+            $stack = Push-Stack $stack $value
+            return ,$stack
+        }
+        elseif($temp -eq "<%"){
+            Write-Host "Evaluate: $expression"
+            $value = Invoke-Expression $expression
+            $stack = Push-Stack $stack $value
+            return ,$stack
+        }
+        else{
+            $expression += $temp
+        }
+    }
+    return ,$stack
 }
 
 Function Create-Stack(){
@@ -88,7 +103,10 @@ Function Clear-Stack($stack){
 }
 
 Function Push-Stack($stack, $value){
-    $stack += $value
+    if($value){
+        $stack += $value
+    }
+
     return ,$stack
 }
 
@@ -96,6 +114,7 @@ Function Top-Stack($stack){
     if( IsEmpty-Stack $stack){
         return $null
     }
+
     return $stack[-1]
 }
 
@@ -111,6 +130,14 @@ Function Pop-Stack($stack){
 
 Function IsEmpty-Stack($stack){
     return ($stack.Count -le 0)
+}
+
+Function Join-Stack($stack){
+    $result = ""
+    if($stack){
+        $stack | ? {$result += $_}
+    }
+    return $result
 }
 
 Export-ModuleMember @( 'Render' )
