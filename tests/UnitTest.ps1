@@ -21,4 +21,11 @@ Describe "Render template With Value"{
         $res = Render $temp $model
         $res | Should Be 'book name foo, author bar'
     }
+
+    It "Should support nested expression in template"{
+        $temp = 'book count <%= $model.Count %> Book Name: <% $model | % { %> book: <%= $_ %> <% } %>'
+        $model = @("foo", "bar")
+        $res = Render $temp $model
+        $res | Should Be "book count 2 Book Name: book foo book bar"
+    }
 }
