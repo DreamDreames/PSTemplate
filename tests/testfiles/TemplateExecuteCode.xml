@@ -1,6 +1,6 @@
 <books>
 	<book>
-		<% $models | % { %>
+		<% $model | % { %>
 			<name> <%= $_ %> </name>
 		<% } %>
 	</book>
