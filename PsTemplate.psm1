@@ -19,29 +19,35 @@ Function _Parse($templateStr, $model){
     $stack = Create-Stack
     $containsExp = $False
     $expression = ''
+    $depth = 0
     $indexes | % {
         $exp = $templateStr.SubString($pos, $_ - $pos)
         $cur = $templateStr.SubString($_)
         switch -regex ($cur){
             "^<%=" {
-                Write-Host "Push1: $exp Pos before push: $pos"
-                $stack = _Move-Forward $stack $exp "<%="
+                #Write-Host "Push1: $exp Pos before push: $pos Depth: $depth"
+                $stack = _Move-Forward $stack $exp "<%=" $depth
                 $pos = "<%=".Length
                 $containsExp = $True
+                $depth ++
+                #Write-Host ">>>>>>>>> Push1 $depth"
                 break
             }
             "^<%" {
-                Write-Host "Push2: $exp Pos before push: $pos"
-                $stack, $pos = _Move-Forward $stack $exp "<%"
+                #Write-Host "Push2: $exp Pos before push: $pos Depth: $depth"
+                $stack = _Move-Forward $stack $exp "<%" $depth
                 $pos = "<%".Length
                 $containsExp = $True
+                $depth ++
+                #Write-Host ">>>>>>>>> Push2 $depth"
                 break
             }
             "^%>"{
-                Write-Host "Push and pop: $exp Pos before push: $pos"
-                $stack = _Move-Forward $stack $exp ""
+                #Write-Host "Push and pop: $exp Pos before push: $pos Depth: $depth"
+                $stack = _Move-Forward $stack $exp "" $depth
                 $stack= _Evaluate $stack
                 $pos = "%>".Length
+                if($depth -gt 0){$depth -- }
                 break
             }
             Default {
@@ -49,10 +55,9 @@ Function _Parse($templateStr, $model){
             }
         }
         $pos += $_
-        Write-Host "New Pos: $pos"
     }
     if($pos -lt $templateStr.Length){
-        $stack = Push-Stack $stack $templateStr.SubString($pos)
+        $stack = _Move-Forward $stack $templateStr.SubString($pos) "" $depth
     }
     $exp = Join-Stack $stack
     Write-Host "To be invoke: $exp"
@@ -65,8 +70,11 @@ Function _Parse($templateStr, $model){
     return $exp
 }
 
-Function _Move-Forward($stack, $exp, $pivot){
+Function _Move-Forward($stack, $exp, $pivot, $depth){
     if($exp){
+        if($depth -eq 0){
+            $exp = '$expression +="' + "$exp" + '";'
+        }
         $stack = Push-Stack $stack $exp
     }
     if($pivot){
@@ -85,42 +93,10 @@ Function _Evaluate($stack){
             continue
         }
         if($temp -eq "<%="){
-            #return "$(" + $expression + ")"
-            Write-Host "Expression: $expression"
-            $stack = Push-Stack $stack ('$expression += $(' + "$expression" + ')')
+            $stack = Push-Stack $stack ('$expression += $(' + "$expression" + ');')
             return ,$stack
         }
         elseif($temp -eq "<%"){
-            Push-Stack $stack $expression
-            return ,$stack
-        }
-        else{
-            $expression += $temp
-        }
-    }
-    return ,$stack
-}
-Function _Evaluate1($stack)
-{
-    $expression = ""
-    while(-not (IsEmpty-Stack $stack)){
-        $temp = Top-Stack $stack
-        $stack = Pop-Stack $stack
-        if(-not $temp){
-            continue
-        }
-        if($temp -eq "<%="){
-            Write-Host "Evaluate: $expression"
-            $value = Invoke-Expression $expression
-            $t = Join-Stack $stack
-            Write-Host "Value: $value Current Stack: $t"
-            $stack = Push-Stack $stack $value
-            return ,$stack
-        }
-        elseif($temp -eq "<%"){
-            Write-Host "Evaluate: $expression"
-            #$value = Invoke-Expression $expression
-            #$stack = Push-Stack $stack $value
             $stack = Push-Stack $stack $expression
             return ,$stack
         }
@@ -131,13 +107,14 @@ Function _Evaluate1($stack)
     return ,$stack
 }
 
+
 Function Create-Stack(){
     return ,@()
 }
 
 Function Clear-Stack($stack){
     $stack.Clear()
-    return @()
+    return ,@()
 }
 
 Function Push-Stack($stack, $value){
@@ -160,7 +137,8 @@ Function Pop-Stack($stack){
     $count = $stack.Count
     if($count -lt 2){
         $stack.Clear()
-        return @()
+        $stack = $null
+        return ,@()
     }
 
     return ,$stack[0..($count - 2)]
@@ -171,9 +149,9 @@ Function IsEmpty-Stack($stack){
 }
 
 Function Join-Stack($stack){
-    $result = ''
+    $result = ""
     if($stack){
-        $stack | ? {$result += $_ + ';'}
+        $stack | ? {$result += "$_"}
     }
     return $result
 }
