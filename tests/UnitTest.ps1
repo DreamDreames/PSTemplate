@@ -36,11 +36,11 @@ Describe "Render template With Value"{
     }
 
     It "Should able to output newline with evaluate value expression"{
-        $temp = gc "$data\TemplateEvaluateValue.txt"
+        $file = "$data\TemplateEvaluateValue.txt"
         $model = @{name = 'foo'}
-        $expected = gc "$data\Expected_TemplateEvaluateValue.txt"
-        $res = Render $temp $model 
-        #$res | Out-File C:\temp\test.txt
+        $expected = gc "$data\Expected_TemplateEvaluateValue.txt" | Out-String
+        $res = RenderFile $file $model 
+        $res | Out-File C:\temp\test.txt
         $res | Should Be $expected
     }
 }

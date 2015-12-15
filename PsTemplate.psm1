@@ -6,13 +6,13 @@ Function Render([string]$template, $model){
     }
 
     $str = _Parse $template $indexes 
-    $res =  _Evaluate $str $model
-    return $res
+    return _Evaluate $str $model
 }
 
-#Function RenderFile([string]$filePath, $model){
-#    $content = gc $filePath
-#}
+Function RenderFile([string]$filePath, $model){
+    $content = gc $filePath | Out-String
+    return Render $content $model
+}
 
 Function _Find-Index([string]$templateStr, $startIndex){
     $regex = [regex]"<%=|%>|<%";
@@ -152,4 +152,4 @@ Function Join-Stack($stack){
     return $result
 }
 
-Export-ModuleMember @( 'Render' )
+Export-ModuleMember @( 'Render', 'RenderFile' )
