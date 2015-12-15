@@ -17,7 +17,6 @@ Function _Parse($templateStr, $model){
     }
     $pos = 0
     $stack = Create-Stack
-    $containsExp = $False
     $expression = ''
     $depth = 0
     $indexes | % {
@@ -27,14 +26,12 @@ Function _Parse($templateStr, $model){
             "^<%=" {
                 $stack = _Move-Forward $stack $exp "<%=" $depth
                 $pos = "<%=".Length
-                $containsExp = $True
                 $depth ++
                 break
             }
             "^<%" {
                 $stack = _Move-Forward $stack $exp "<%" $depth
                 $pos = "<%".Length
-                $containsExp = $True
                 $depth ++
                 break
             }
@@ -55,14 +52,10 @@ Function _Parse($templateStr, $model){
         $stack = _Move-Forward $stack $templateStr.SubString($pos) "" $depth
     }
     $exp = Join-Stack $stack
-    Write-Host "To be invoke: $exp"
-    if($containsExp){
-        Write-Host "Invoke... $model"
-        Invoke-Expression "$exp"
-        Write-Host $expression
-        return $expression
-    }
-    return $exp
+    Write-Host "To be invoke: $exp with $model"
+    Invoke-Expression "$exp"
+    Write-Host $expression
+    return $expression
 }
 
 Function _Move-Forward($stack, $exp, $pivot, $depth){
