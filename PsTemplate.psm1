@@ -25,25 +25,20 @@ Function _Parse($templateStr, $model){
         $cur = $templateStr.SubString($_)
         switch -regex ($cur){
             "^<%=" {
-                #Write-Host "Push1: $exp Pos before push: $pos Depth: $depth"
                 $stack = _Move-Forward $stack $exp "<%=" $depth
                 $pos = "<%=".Length
                 $containsExp = $True
                 $depth ++
-                #Write-Host ">>>>>>>>> Push1 $depth"
                 break
             }
             "^<%" {
-                #Write-Host "Push2: $exp Pos before push: $pos Depth: $depth"
                 $stack = _Move-Forward $stack $exp "<%" $depth
                 $pos = "<%".Length
                 $containsExp = $True
                 $depth ++
-                #Write-Host ">>>>>>>>> Push2 $depth"
                 break
             }
             "^%>"{
-                #Write-Host "Push and pop: $exp Pos before push: $pos Depth: $depth"
                 $stack = _Move-Forward $stack $exp "" $depth
                 $stack= _Evaluate $stack
                 $pos = "%>".Length
