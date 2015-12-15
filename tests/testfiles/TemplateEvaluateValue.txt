@@ -1,1 +1,3 @@
-hello, this is <%= $model.name %>. 
+hello, world
+hello, this is <%= $model.name %>.
+hello, world

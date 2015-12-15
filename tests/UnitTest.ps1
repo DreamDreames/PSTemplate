@@ -1,4 +1,5 @@
 $here = Split-Path $MyInvocation.MyCommand.Path
+$data = "$here\testfiles"
 
 Describe "Render template With Value"{
     It "Should replace a single value"{
@@ -32,5 +33,14 @@ Describe "Render template With Value"{
     It "Should able to render tempalte without model"{
         $temp = 'this is an empty template'
         Render $temp '' | Should Be $temp
+    }
+
+    It "Should able to output newline with evaluate value expression"{
+        $temp = gc "$data\TemplateEvaluateValue.txt"
+        $model = @{name = 'foo'}
+        $expected = gc "$data\Expected_TemplateEvaluateValue.txt"
+        $res = Render $temp $model 
+        #$res | Out-File C:\temp\test.txt
+        $res | Should Be $expected
     }
 }
