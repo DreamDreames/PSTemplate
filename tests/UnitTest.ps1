@@ -23,10 +23,10 @@ Describe "Render template With Value"{
     }
 
     It "Should support nested expression in template"{
-        $temp = 'book count <%= $model.Count %> Book Name: <% $model | % { %> book: <%= $_ %> <% } %>'
+        $temp = 'book count <%= $model.Count %> Book Name: <% $model | % { %>book <%= $_ %> <% } %>'
         $model = @("foo", "bar")
         $res = Render $temp $model
-        $res | Should Be "book count 2 Book Name: book foo book bar"
+        $res | Should Be "book count 2 Book Name: book foo book bar "
     }
 
     It "Should able to render tempalte without model"{
