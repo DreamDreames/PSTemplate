@@ -1,43 +1,47 @@
 
 Function Render([string]$template, $model){
-    $str = _Parse $template $model
-    return $str
+    $indexes = _Find-Index $template
+    if(-not $indexes){
+        return $template
+    }
+
+    $str = _Parse $template $indexes 
+    $res =  _Evaluate $str $model
+    return $res
 }
+
+#Function RenderFile([string]$filePath, $model){
+#    $content = gc $filePath
+#}
 
 Function _Find-Index([string]$templateStr, $startIndex){
     $regex = [regex]"<%=|%>|<%";
     return $regex.Matches($templateStr) | foreach {$_.Index} | Sort | Get-Unique
 }
 
-Function _Parse($templateStr, $model){
-    $indexes = _Find-Index $templateStr
-    Write-Host "template: $templateStr, index: $indexes"
-    if(-not $indexes){
-        return $templateStr
-    }
+Function _Parse($templateStr, $indexes){
     $pos = 0
     $stack = Create-Stack
-    $expression = ''
     $depth = 0
     $indexes | % {
         $exp = $templateStr.SubString($pos, $_ - $pos)
         $cur = $templateStr.SubString($_)
         switch -regex ($cur){
             "^<%=" {
-                $stack = _Move-Forward $stack $exp "<%=" $depth
+                $stack = _Push $stack $exp "<%=" $depth
                 $pos = "<%=".Length
                 $depth ++
                 break
             }
             "^<%" {
-                $stack = _Move-Forward $stack $exp "<%" $depth
+                $stack = _Push $stack $exp "<%" $depth
                 $pos = "<%".Length
                 $depth ++
                 break
             }
             "^%>"{
-                $stack = _Move-Forward $stack $exp "" $depth
-                $stack= _Evaluate $stack
+                $stack = _Push $stack $exp "" $depth
+                $stack= _Pop $stack
                 $pos = "%>".Length
                 if($depth -gt 0){$depth -- }
                 break
@@ -49,16 +53,20 @@ Function _Parse($templateStr, $model){
         $pos += $_
     }
     if($pos -lt $templateStr.Length){
-        $stack = _Move-Forward $stack $templateStr.SubString($pos) "" $depth
+        $stack = _Push $stack $templateStr.SubString($pos) "" $depth
     }
     $exp = Join-Stack $stack
     Write-Host "To be invoke: $exp with $model"
+    return $exp
+}
+
+Function _Evaluate($exp, $model){
+    $expression = ''
     Invoke-Expression "$exp"
-    Write-Host $expression
     return $expression
 }
 
-Function _Move-Forward($stack, $exp, $pivot, $depth){
+Function _Push($stack, $exp, $pivot, $depth){
     if($exp){
         if($depth -eq 0){
             $exp = '$expression +="' + "$exp" + '";'
@@ -72,7 +80,7 @@ Function _Move-Forward($stack, $exp, $pivot, $depth){
     return ,$stack
 }
 
-Function _Evaluate($stack){
+Function _Pop($stack){
     $expression = ''
     while( -not (IsEmpty-Stack $stack)){
         $temp = Top-Stack $stack
