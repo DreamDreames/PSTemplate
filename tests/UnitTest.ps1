@@ -28,4 +28,9 @@ Describe "Render template With Value"{
         $res = Render $temp $model
         $res | Should Be "book count 2 Book Name: book foo book bar"
     }
+
+    It "Should able to render tempalte without model"{
+        $temp = 'this is an empty template'
+        Render $temp '' | Should Be $temp
+    }
 }
