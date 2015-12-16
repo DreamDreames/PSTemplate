@@ -5,14 +5,27 @@ Function Render([string]$template, $model){
         return $template
     }
 
+    $template = _Pre $template
     $str = _Parse $template $indexes 
-    return _Evaluate $str $model
+
+    $str = _Evaluate $str $model
+
+    $template = _Post $str
+    return $template
 }
 
 Function RenderFile([string]$filePath, $model){
     $content = gc $filePath | Out-String
 
     return Render $content $model
+}
+
+Function _Pre([string]$template){
+    return $template
+}
+
+Function _Post([string]$template){
+    return $template
 }
 
 Function _Find-Index([string]$templateStr, $startIndex){
