@@ -1,7 +1,7 @@
 <books>
 	<book>
-		<% $model | % { %>
-			<name> <%= $_ %> </name>
-		<% } %>
+	<% $model | % { %>
+		<name> <%= $_ %> </name>
+	<% } %>
 	</book>
 </books>	

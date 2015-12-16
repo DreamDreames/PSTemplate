@@ -42,7 +42,7 @@ Function _Parse($templateStr, $indexes){
             }
             "^%>"{
                 $stack = _Push $stack $exp "" $depth
-                $stack= _Pop $stack
+                $stack= _Pop $stack $depth
                 $pos = "%>".Length
                 if($depth -gt 0){$depth -- }
                 break
@@ -62,13 +62,8 @@ Function _Parse($templateStr, $indexes){
 
 Function _Evaluate($exp, $model){
     $expression = ''
-    Write-Host "To be invoke: $exp"
-    #$exp = $exp.Replace("<", "LEFT").Replace("/>", "RIGHT1").Replace(">", "RIGHT2")
-    #Write-Host "To be invoke: $exp"
-    Invoke-Expression "$exp"
-    #$expression = $expression.Replace("LEFT", "<").Replace("RIGHT1", "/>").Replace("RIGHT2", ">")
-    #$sb = [scriptblock]::create("{$exp}")
-    #Invoke-Command -scriptblock $sb -argumentlist $exression,$model
+    Write-Host $exp 
+    Invoke-Expression $exp
     return $expression
 }
 
@@ -86,7 +81,7 @@ Function _Push($stack, $exp, $pivot, $depth){
     return ,$stack
 }
 
-Function _Pop($stack){
+Function _Pop($stack, $depth){
     $expression = ''
     while( -not (IsEmpty-Stack $stack)){
         $temp = Top-Stack $stack
@@ -95,10 +90,13 @@ Function _Pop($stack){
             continue
         }
         if($temp -eq "<%="){
-            $stack = Push-Stack $stack ('$expression += $(' + "$expression" + ');')
+            $stack = Push-Stack $stack ('$expression += "$(' + "$expression" + ')";')
             return ,$stack
         }
         elseif($temp -eq "<%"){
+            if($depth -eq 1){
+                $expression += ';'
+            }
             $stack = Push-Stack $stack $expression
             return ,$stack
         }

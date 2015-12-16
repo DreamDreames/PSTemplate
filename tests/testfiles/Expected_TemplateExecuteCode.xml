@@ -1,7 +1,9 @@
 <books>
 	<book>
-		
-			<name> foo </name>
-			<name> bar </name>
+	
+		<name> foo </name>
+	
+		<name> bar </name>
+	
 	</book>
 </books>	

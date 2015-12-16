@@ -42,8 +42,10 @@ Describe "Render Template With Model"{
     It "Should be able to support nested expression with newline"{
         $fileName = "TemplateExecuteCode.xml"
         $file = "$data\$fileName"
-        $model = @{name = 'foo'; author = 'bar'}
+        $model = @("foo", "bar")
         $expected = gc "$data\Expected_$fileName" | Out-String
-        RenderFile $file $model | Should Be $expected
+        $actual = RenderFile $file $model 
+        $actual > C:\temp\test.txt
+        $actual | Should Be $expected
     }
 }
