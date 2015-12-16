@@ -1,0 +1,8 @@
+<books>
+	<count> "count:" <%= $model.count %> </count>
+	<book>
+	<% $model | % { %>
+		<name> book: "<%= $_ %>" </name>
+	<% } %>
+	</book>
+</books>	

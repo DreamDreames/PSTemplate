@@ -1,0 +1,10 @@
+<books>
+	<count> 'count:' 2 </count>
+	<book>
+	
+		<name> book: 'foo' </name>
+	
+		<name> book: 'bar' </name>
+	
+	</book>
+</books>	

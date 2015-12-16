@@ -54,6 +54,18 @@ Describe "Render Template With Model"{
     }
 
     It "Should support double quote in template"{
-
+        $fileName = "TemplateWithDoubleQuote.xml"
+        $file = "$data\$fileName"
+        $model = @("foo", "bar")
+        $expected = gc "$data\Expected_$fileName" | Out-String
+        RenderFile $file $model | Should Be $expected
+    }
+    
+    It "Should support single quote in template"{
+        $fileName = "TemplateWithSingleQuote.xml"
+        $file = "$data\$fileName"
+        $model = @("foo", "bar")
+        $expected = gc "$data\Expected_$fileName" | Out-String
+        RenderFile $file $model | Should Be $expected
     }
 }
