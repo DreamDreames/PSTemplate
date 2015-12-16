@@ -62,7 +62,7 @@ Function _Parse($templateStr, $indexes){
 
 Function _Evaluate($exp, $model){
     $expression = ''
-    Write-Host $exp 
+    #Write-Host $exp 
     Invoke-Expression $exp
     return $expression
 }

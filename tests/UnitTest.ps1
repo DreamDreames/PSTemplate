@@ -44,8 +44,6 @@ Describe "Render Template With Model"{
         $file = "$data\$fileName"
         $model = @("foo", "bar")
         $expected = gc "$data\Expected_$fileName" | Out-String
-        $actual = RenderFile $file $model 
-        $actual > C:\temp\test.txt
-        $actual | Should Be $expected
+        RenderFile $file $model | Should Be $expected
     }
 }
