@@ -11,6 +11,7 @@ Function Render([string]$template, $model){
 
 Function RenderFile([string]$filePath, $model){
     $content = gc $filePath | Out-String
+
     return Render $content $model
 }
 
@@ -56,13 +57,18 @@ Function _Parse($templateStr, $indexes){
         $stack = _Push $stack $templateStr.SubString($pos) "" $depth
     }
     $exp = Join-Stack $stack
-    Write-Host "To be invoke: $exp with $model"
     return $exp
 }
 
 Function _Evaluate($exp, $model){
     $expression = ''
+    Write-Host "To be invoke: $exp"
+    #$exp = $exp.Replace("<", "LEFT").Replace("/>", "RIGHT1").Replace(">", "RIGHT2")
+    #Write-Host "To be invoke: $exp"
     Invoke-Expression "$exp"
+    #$expression = $expression.Replace("LEFT", "<").Replace("RIGHT1", "/>").Replace("RIGHT2", ">")
+    #$sb = [scriptblock]::create("{$exp}")
+    #Invoke-Command -scriptblock $sb -argumentlist $exression,$model
     return $expression
 }
 
