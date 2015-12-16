@@ -46,4 +46,14 @@ Describe "Render Template With Model"{
         $expected = gc "$data\Expected_$fileName" | Out-String
         RenderFile $file $model | Should Be $expected
     }
+
+    It "Should support double quote in template"{
+        $temp = '"book count" <%= $model.Count %> "Book Name:" <% $model | % { %>book <%= $_ %> <% } %>'
+        $model = @("foo", "bar")
+        Render $temp $model | Should Be '"book count" 2 "Book Name": book foo book bar '
+    }
+
+    It "Should support double quote in template"{
+
+    }
 }
