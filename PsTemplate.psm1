@@ -19,11 +19,11 @@ Function RenderFile([string]$filePath, $model){
 }
 
 Function _Pre([string]$template){
-    return $template.Replace('"', '_{^}_')
+    return $template.Replace('"', '&quot&')
 }
 
 Function _Post([string]$template){
-    return $template.Replace('_{^}_', '"')
+    return $template.Replace('&quot&', '"')
 }
 
 Function _Find-Index([string]$templateStr, $startIndex){
