@@ -1,15 +1,15 @@
 
 Function Render([string]$template, $model){
-    $indexes = _Find-Index $template
+    $str = _Pre $template
+    $indexes = _Find-Index $str
     if(-not $indexes){
         return $template
     }
 
-    $template = _Pre $template
-    $template = _Parse $template $indexes 
-    $template = _Post (_Evaluate $template $model)
+    $str = _Parse $str $indexes 
+    $str = _Post (_Evaluate $str $model)
 
-    return $template
+    return $str
 }
 
 Function RenderFile([string]$filePath, $model){
@@ -19,11 +19,11 @@ Function RenderFile([string]$filePath, $model){
 }
 
 Function _Pre([string]$template){
-    return $template.Replace('"', "_$_")
+    return $template.Replace('"', '_{^}_')
 }
 
 Function _Post([string]$template){
-    return $template.Replace("_$_", '"')
+    return $template.Replace('_{^}_', '"')
 }
 
 Function _Find-Index([string]$templateStr, $startIndex){
