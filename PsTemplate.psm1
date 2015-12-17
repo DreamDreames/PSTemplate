@@ -21,11 +21,11 @@ Function RenderFile([string]$filePath, $model){
 }
 
 Function _Pre([string]$template){
-    return $template
+    return $template.Replace('"', "_$_")
 }
 
 Function _Post([string]$template){
-    return $template
+    return $template.Replace("_$_", '"')
 }
 
 Function _Find-Index([string]$templateStr, $startIndex){
