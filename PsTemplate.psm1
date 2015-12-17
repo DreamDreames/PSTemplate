@@ -6,11 +6,9 @@ Function Render([string]$template, $model){
     }
 
     $template = _Pre $template
-    $str = _Parse $template $indexes 
+    $template = _Parse $template $indexes 
+    $template = _Post (_Evaluate $template $model)
 
-    $str = _Evaluate $str $model
-
-    $template = _Post $str
     return $template
 }
 
