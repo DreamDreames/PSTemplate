@@ -12,7 +12,7 @@ $soundResult =  @(
 $model = @{
     "taskName" = "ut";
     "stageName"= "commit";
-    "gitUrl"   = "https://tfs.slb.com/tfs/slb1/Prism/_git/CDaaS";
+    "gitUrl"   = "https://test.example.com";
     "soundResults" = $soundResult
 }
 

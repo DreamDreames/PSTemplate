@@ -45,8 +45,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>https://tfs.slb.com/tfs/slb1/Prism/_git/CDaaS</url>
-        <!-- <credentialsId>4e6eab64-6349-4dbe-919e-946dcc14d600</credentialsId>  -->
+        <url></url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
