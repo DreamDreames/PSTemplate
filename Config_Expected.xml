@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <properties>
+    <se.diabol.jenkins.pipeline.PipelineProperty plugin="delivery-pipeline-plugin@0.9.7">
+      <taskName>ut</taskName>
+      <stageName>commit</stageName>
+    </se.diabol.jenkins.pipeline.PipelineProperty>
+  </properties>
+  <builders>
+    <hudson.plugins.powershell.PowerShell plugin="powershell@1.3">
+      <command> .\scripts\tfs.ps1 -id 1133 </command>
+    </hudson.plugins.powershell.PowerShell>
+  </builders>
+  <publishers>
+    <net.hurstfrost.hudson.sounds.HudsonSoundsNotifier plugin="sounds@0.4.3">
+      <soundEvents>
+        <net.hurstfrost.hudson.sounds.HudsonSoundsNotifier_-SoundEvent>
+          <soundId>houston</soundId>
+          <fromResults>
+            <hudson.model.Result>
+              <name>NOT_BUILT</name>
+              <ordinal>3</ordinal>
+            </hudson.model.Result>
+            <hudson.model.Result>
+              <name>ABORTED</name>
+              <ordinal>4</ordinal>
+            </hudson.model.Result>
+            <hudson.model.Result>
+              <name>SUCCESS</name>
+              <ordinal>0</ordinal>
+            </hudson.model.Result>
+            <hudson.model.Result>
+              <name>FAILURE</name>
+              <ordinal>2</ordinal>
+            </hudson.model.Result>
+        </net.hurstfrost.hudson.sounds.HudsonSoundsNotifier_-SoundEvent>
+      </soundEvents>
+    </net.hurstfrost.hudson.sounds.HudsonSoundsNotifier>
+  </publishers>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>https://tfs.slb.com/tfs/slb1/Prism/_git/CDaaS</url>
+        <!-- <credentialsId>4e6eab64-6349-4dbe-919e-946dcc14d600</credentialsId>  -->
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+</project>

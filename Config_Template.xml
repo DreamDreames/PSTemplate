@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <properties>
+    <se.diabol.jenkins.pipeline.PipelineProperty plugin="delivery-pipeline-plugin@0.9.7">
+      <taskName><%= $model.taskName %></taskName>
+      <stageName><%= $model.stageName %></stageName>
+    </se.diabol.jenkins.pipeline.PipelineProperty>
+  </properties>
+  <builders>
+    <hudson.plugins.powershell.PowerShell plugin="powershell@1.3">
+      <command> .\scripts\tfs.ps1 -id 1133 </command>
+    </hudson.plugins.powershell.PowerShell>
+  </builders>
+  <publishers>
+    <net.hurstfrost.hudson.sounds.HudsonSoundsNotifier plugin="sounds@0.4.3">
+      <soundEvents>
+        <net.hurstfrost.hudson.sounds.HudsonSoundsNotifier_-SoundEvent>
+          <soundId>houston</soundId>
+          <fromResults>
+            <% $model.soundResults | % { %>
+                <name> <%= $_.name %> </name>
+                <ordinal> <%= $_.ordinal %> </ordinal>
+            <% } %>
+          <fromResults>
+        </net.hurstfrost.hudson.sounds.HudsonSoundsNotifier_-SoundEvent>
+      </soundEvents>
+    </net.hurstfrost.hudson.sounds.HudsonSoundsNotifier>
+  </publishers>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <% if($model.gitUrl){ %>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url><%= $model.gitUrl %></url>
+      </hudson.plugins.git.UserRemoteConfig>
+      <% } %>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+</project>
