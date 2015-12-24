@@ -16,4 +16,4 @@ $model = @{
     "soundResults" = $soundResult
 }
 
-RenderFile "$root\Config_Template.xml" $model | Out-File "$root\Config_Actual.xml" 
+Render-File "$root\Config_Template.xml" $model | Out-File "$root\Config_Actual.xml" 

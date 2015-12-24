@@ -1,5 +1,5 @@
 
-Function Render([string]$template, $model){
+Function Render-String([string]$template, $model){
     $str = _Pre $template
     $indexes = _Find-Index $str
     if(-not $indexes){
@@ -12,10 +12,10 @@ Function Render([string]$template, $model){
     return $str
 }
 
-Function RenderFile([string]$filePath, $model){
+Function Render-File([string]$filePath, $model){
     $content = gc $filePath | Out-String
 
-    return Render $content $model
+    return Render-String $content $model
 }
 
 Function _Pre([string]$template){
@@ -167,4 +167,4 @@ Function Join-Stack($stack){
     return $result
 }
 
-Export-ModuleMember @( 'Render', 'RenderFile' )
+Export-ModuleMember @( 'Render-String', 'Render-File' )
