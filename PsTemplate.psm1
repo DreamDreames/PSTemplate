@@ -72,16 +72,16 @@ Function _Parse($templateStr, $indexes){
 }
 
 Function _Evaluate($exp, $model){
-    $expression = ''
+    $__expression__ = ''
     #Write-Host $exp 
     Invoke-Expression $exp
-    return $expression
+    return $__expression__
 }
 
 Function _Push($stack, $exp, $pivot, $depth){
     if($exp){
         if($depth -eq 0){
-            $exp = '$expression +="' + "$exp" + '";'
+            $exp = '$__expression__ +="' + "$exp" + '";'
         }
         $stack = Push-Stack $stack $exp
     }
@@ -93,7 +93,7 @@ Function _Push($stack, $exp, $pivot, $depth){
 }
 
 Function _Pop($stack, $depth){
-    $expression = ''
+    $__expression__ = ''
     while( -not (IsEmpty-Stack $stack)){
         $temp = Top-Stack $stack
         $stack = Pop-Stack $stack
@@ -101,18 +101,18 @@ Function _Pop($stack, $depth){
             continue
         }
         if($temp -eq "<%="){
-            $stack = Push-Stack $stack ('$expression += "$(' + "$expression" + ')";')
+            $stack = Push-Stack $stack ('$__expression__ += "$(' + "$__expression__" + ')";')
             return ,$stack
         }
         elseif($temp -eq "<%"){
             if($depth -eq 1){
-                $expression += ';'
+                $__expression__ += ';'
             }
-            $stack = Push-Stack $stack $expression
+            $stack = Push-Stack $stack $__expression__
             return ,$stack
         }
         else{
-            $expression += $temp
+            $__expression__ += $temp
         }
     }
     return ,$stack
